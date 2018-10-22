@@ -1,0 +1,8 @@
+Key-Type: RSA
+Key-Length: 4096
+Name-Real: $name
+Name-Email: $email
+Expire-Date: 0
+Passphrase: $pass
+%commit
+%echo Key generated for $name
