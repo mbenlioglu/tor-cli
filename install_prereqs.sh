@@ -38,7 +38,6 @@ elif [ $(uname -m) = "x86_64" ]; then
     dwnlink="https://docs.google.com/uc?id=0B3X9GlR6EmbnQ0FtZmJJUXEyRTA&export=download"
 fi
 curl -L $dwnlink -o $GDRIVE --progress-bar
-chmod +x $GDRIVE
 
 #Install deluge, gnupg, pigz
 if [ "$1" -eq "remote" ]; then
@@ -46,26 +45,30 @@ if [ "$1" -eq "remote" ]; then
     echo "{
   \"file\": 1, 
   \"format\": 1
-}{
+}{s
   \"commands\": [
     [
       \"0\", 
       \"added\", 
-      \"$(pwd)/onTorrentAdded.sh\"
+      \"$BIN_DIR/onTorrentAdded.sh\"
     ], 
     [
       \"1\", 
       \"complete\", 
-      \"$(pwd)/onTorrentComplete.sh\"
+      \"$BIN_DIR/onTorrentComplete.sh\"
     ]
   ]
 }" > ~/.config/deluge/execute.conf
+    cp -rf ./bin/remote/. $BIN_DIR/
     deluged && sleep 1; deluge-console plugin -e Execute
 elif [ "$!" -eq "local" ]; then
     echo y | apt-get install gnupg
+    cp -rf ./bin/local/. $BIN_DIR/
 else
     echo -e "${RED} wrong parameter${NC}"
 	exit $?
 fi
+
+chmod u+x $BIN_DIR/*
 
 echo -e "${GREEN}Done.${NC}"
