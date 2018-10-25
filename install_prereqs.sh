@@ -71,4 +71,8 @@ fi
 
 chmod u+x $BIN_DIR/*
 
+# Set Environment
+echo "export TOR_CLI_HOME=$TOR_CLI_HOME" >> ~/.bashrc
+source ~/.bashrc
+
 echo -e "${GREEN}Done.${NC}"

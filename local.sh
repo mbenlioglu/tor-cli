@@ -19,6 +19,11 @@ if [ "$(expr substr $(uname -s) 1 5)" != "Linux" ]; then
     exit 1
 fi
 
+# Kill existing dataTracker if requested
+if [ "$1" = "--kill-tracker" ]; then
+    kill $(cat $TOR_CLI_HOME/tracker.pid)
+fi
+
 # Check if packages are installed
 if !([ -f $GDRIVE ] && dpkg-query -W gnupg &>/dev/null); then
     echo -e "${BROWN}Missing packages detected! They will now be installed. Script might request elevation${NC}"
@@ -37,20 +42,20 @@ fi
 
 # Check if drive folders for tor-cli exists, create if necessary
 echo -e "${BROWN}Checking drive folders...${NC}"
-GDRIVE_HOME=$($GDRIVE list -q "name contains '$TOR_CLI_HOME'" --no-header | cut -d" " -f 1 -)
-if [ "$GDRIVE_HOME" = "" ]; then
+GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header | cut -d" " -f 1 -)
+if [ -z "$GDRIVE_HOME" ]; then
     GDRIVE_HOME=$($GDRIVE mkdir "$TOR_CLI_HOME" | cut -d" " -f 2 -)
 fi
-KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name contains 'pub_keys'" --no-header | cut -d" " -f 1 -)
-if [ "$KEYS_FOLDER" = "" ]; then
+KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'pub_keys'" --no-header | cut -d" " -f 1 -)
+if [ -z "$KEYS_FOLDER" ]; then
     KEYS_FOLDER=$($GDRIVE mkdir "pub_keys" -p $GDRIVE_HOME | cut -d" " -f 2 -)
 fi
-TASKS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name contains 'tasks'" --no-header | cut -d" " -f 1 -)
-if [ "$TASKS_FOLDER" = "" ]; then
+TASKS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'tasks'" --no-header | cut -d" " -f 1 -)
+if [ -z "$TASKS_FOLDER" ]; then
     TASKS_FOLDER=$($GDRIVE mkdir "tasks" -p $GDRIVE_HOME | cut -d" " -f 2 -)
 fi
-FILES_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name contains 'files'" --no-header | cut -d" " -f 1 -)
-if [ "$FILES_FOLDER" = "" ]; then
+FILES_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'files'" --no-header | cut -d" " -f 1 -)
+if [ -z "$FILES_FOLDER" ]; then
     FILES_FOLDER=$($GDRIVE mkdir "files" -p $GDRIVE_HOME | cut -d" " -f 2 -)
 fi
 
@@ -61,12 +66,12 @@ fi
 echo -e "${BROWN}Checking your key...${NC}"
 if ! gpg --list-secret-keys "$email" &>/dev/null; then
     echo -e "${BROWN}No secret key found in your name creating now...${NC}"
-	read -p 'Full Name ($name): ' $name
-	read -p 'Email ($email): ' $email
+	read -p 'Full Name ($name): ' name
+	read -p 'Email ($email): ' email
 	while true; do
-	    read -sp 'Password: ' $pass
+	    read -sp 'Password: ' pass
 	    echo
-	    read -sp 'Password (again): ' $pass2
+	    read -sp 'Password (again): ' pass2
 	    echo
 	    [ "$pass" = "$pass2" ] && break
 	    echo "Passwords don't match! Please try again"
@@ -79,6 +84,21 @@ EOF"
 	shred -ufn 5 .userkey
 	update_drive=true
 fi
+if [ -z "$down_path" ]; then
+    uname -v | grep Microsoft &> /dev/null
+    # Get default "Downloads" folder path
+    if [ $? -eq 0 ]; then
+        down_path=$(wslpath $(reg.exe query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" /v {374DE290-123F-4565-9164-39C4925E467B} | grep {374DE290-123F-4565-9164-39C4925E467B} | rev | cut -d" " -f1 | rev | sed 's/\r$//'))
+    else
+        down_path=~/Downloads
+    fi
+    echo -n "Enter Data download path (default: $down_path): "
+    read down_path
+    echo "data_path=$down_path" >> $USER_CONF
+    if [ ! -d "$down_path" ]; then
+        mkdir -p $down_path
+    fi
+fi
 
 # Export users's public key if not exported yet
 PUBKEY_FILE=$email.asc
@@ -87,33 +107,35 @@ if [ ! -f $KEY_DIR/$PUBKEY_FILE ]; then
 fi
 
 # Check drive for key upload if not exists
-PUBKEY_DRIVE=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name contains '$PUBKEY_FILE'" --no-header | cut -d" " -f1 -)
-if [ "$PUBKEY_DRIVE" = "" ]; then
+PUBKEY_DRIVE=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = '$PUBKEY_FILE'" --no-header | cut -d" " -f1 -)
+if [ -z "$PUBKEY_DRIVE" ]; then
 	echo -e "${BROWN}Uploading your public key to drive...${NC}"
     PUBKEY_DRIVE= $($GDRIVE upload "$KEY_DIR/$PUBKEY_FILE" -p $KEYS_FOLDER | cut -d$"\n" -f2 - | cut -d" " -f2 -)
 elif [ "$update_drive" = true ]; then
     echo -e "${BROWN}Updating your public key in drive...${NC}"
-    $GDRIVE update $PUBKEY_DRIVE $KEY_DIR/$PUBKEY_FILE &> /dev/null
+    $GDRIVE update "$PUBKEY_DRIVE" "$KEY_DIR/$PUBKEY_FILE" &> /dev/null
 fi
 
 # Get remote buttler's public key
-BUTTLER_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name contains 'alfred.pennyworth.asc'" --no-header | cut -d" " -f1 -)
-if [ "$BUTTLER_KEY" = "" ]; then
+BUTTLER_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = 'alfred.pennyworth.asc'" --no-header | cut -d" " -f1 -)
+if [ -z "$BUTTLER_KEY" ]; then
     echo "Uh oh. Your buttler hasn't put his public key to drive. Are you sure he's online?"
     exit 1
 else
-    $GDRIVE download --stdout $BUTTLER_KEY | gpg --import - &> /dev/null
+    $GDRIVE download --stdout "$BUTTLER_KEY" | gpg --import - &> /dev/null
 fi
 
 # Ask for torrent link
-read -p 'Please enter the link of torrent file or magnet link: ' $link
+read -p 'Please enter the link of torrent file or magnet link: ' link
 
 # Create task file, encrypt and upload
 echo "$link" | gpg -eu "$email" -r "alfred.pennyworth@wayneenterprises.com" --trust-model always - > "$email.task"
 $GDRIVE upload -p "$TASKS_FOLDER" --delete "$email.task"
 
 # Wait for torrent to upload drive (track progress, wait for file id)
+nohup $BIN_DIR/dataTrack.sh "$email" "$down_path" > "$TOR_CLI_HOME/tracker.out" &
+echo $! > "$TOR_CLI_HOME/tracker.pid"
 
-# Download file, decrypt, unpack archieve
-
-# Remove task file
+echo -e "${BROWN}Your request has been sent. A process is waiting on the background to download your file when ready."
+echo -e "You can track the progress with 'tail -f \$TOR_CLI_HOME/tracker.out' command."
+echo -e "${GREEN}Done.${NC}"

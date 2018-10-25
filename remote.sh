@@ -68,22 +68,22 @@ EOF"
 fi
 
 # Export buttler's public key if not exported yet
-if [ ! -f $KEY_DIR/alfred.pennyworth.asc ]; then
-    gpg --export alfred.pennyworth@wayneenterprises.com > $KEY_DIR/alfred.pennyworth.asc
+if [ ! -f $KEY_DIR/alfred.pennyworth.pub ]; then
+    gpg --export alfred.pennyworth@wayneenterprises.com > $KEY_DIR/alfred.pennyworth.pub
 fi
 
 # Upload buttler's key if not uploaded yet
-BUTTLER_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name contains 'alfred.pennyworth.asc'" --no-header | cut -d" " -f1 -)
+BUTTLER_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name contains 'alfred.pennyworth.pub'" --no-header | cut -d" " -f1 -)
 if [ "$BUTTLER_KEY" = "" ]; then
 	echo -e "${BROWN}Uploading server's public key to drive...${NC}"
-    BUTTLER_KEY= $($GDRIVE upload "$KEY_DIR/alfred.pennyworth.asc" -p $KEYS_FOLDER | cut -d$"\n" -f2 - | cut -d" " -f2 -)
+    BUTTLER_KEY= $($GDRIVE upload "$KEY_DIR/alfred.pennyworth.pub" -p $KEYS_FOLDER | cut -d$"\n" -f2 - | cut -d" " -f2 -)
 elif [ "$update_drive" = true ]; then
     echo -e "${BROWN}Updating server's public key in drive...${NC}"
-    $GDRIVE update $BUTTLER_KEY $KEY_DIR/alfred.pennyworth.asc &> /dev/null
+    $GDRIVE update $BUTTLER_KEY $KEY_DIR/alfred.pennyworth.pub &> /dev/null
 fi
 
-# Wait task file from drive (check every minute)
+# Wait task file from drive
+nohup $BIN_DIR/taskWait.sh > taskwait.out 2>&1 &
+echo $! > "$TOR_CLI_HOME/taskwait.pid"
 
-# Dowload torrent file
-deluge-console add 
-
+echo -e "${GREEN}Configuration done. Waiting for tasks...${NC}"
