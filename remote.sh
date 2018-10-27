@@ -17,6 +17,11 @@ if [ "$(expr substr $(uname -s) 1 5)" != "Linux" ]; then
     exit 1
 fi
 
+# Kill existing taskWait if requested
+if [ "$1" = "--kill-taskwaiter" ]; then
+    kill $(cat $TOR_CLI_HOME/taskwait.pid)
+fi
+
 # Check if packages are installed
 if !([ -f $GDRIVE ] && dpkg-query -W pigz deluged deluge-console gnupg &>/dev/null); then
     echo -e "${BROWN}Missing packages detected! They will now be installed. Script might request elevation${NC}"
@@ -35,20 +40,20 @@ fi
 
 # Check if drive folders for tor-cli exists, create if necessary
 echo -e "${BROWN}Checking drive folders...${NC}"
-GDRIVE_HOME=$($GDRIVE list -q "name contains '$TOR_CLI_HOME'" --no-header | cut -d" " -f 1 -)
-if [ "$GDRIVE_HOME" = "" ]; then
+GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)
+if [ -z "$GDRIVE_HOME" ]; then
     GDRIVE_HOME=$($GDRIVE mkdir "$TOR_CLI_HOME" | cut -d" " -f 2 -)
 fi
-KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name contains 'pub_keys'" --no-header | cut -d" " -f 1 -)
-if [ "$KEYS_FOLDER" = "" ]; then
+KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'pub_keys'" --no-header --name-width 0 | cut -d" " -f 1 -)
+if [ -z "$KEYS_FOLDER" ]; then
     KEYS_FOLDER=$($GDRIVE mkdir "pub_keys" -p $GDRIVE_HOME | cut -d" " -f 2 -)
 fi
-TASKS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name contains 'tasks'" --no-header | cut -d" " -f 1 -)
-if [ "$TASKS_FOLDER" = "" ]; then
+TASKS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'tasks'" --no-header --name-width 0 | cut -d" " -f 1 -)
+if [ -z "$TASKS_FOLDER" ]; then
     TASKS_FOLDER=$($GDRIVE mkdir "tasks" -p $GDRIVE_HOME | cut -d" " -f 2 -)
 fi
-FILES_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name contains 'files'" --no-header | cut -d" " -f 1 -)
-if [ "$FILES_FOLDER" = "" ]; then
+FILES_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'files'" --no-header --name-width 0 | cut -d" " -f 1 -)
+if [ -z "$FILES_FOLDER" ]; then
     FILES_FOLDER=$($GDRIVE mkdir "files" -p $GDRIVE_HOME | cut -d" " -f 2 -)
 fi
 
@@ -73,7 +78,7 @@ if [ ! -f $KEY_DIR/alfred.pennyworth.pub ]; then
 fi
 
 # Upload buttler's key if not uploaded yet
-BUTTLER_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name contains 'alfred.pennyworth.pub'" --no-header | cut -d" " -f1 -)
+BUTTLER_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = 'alfred.pennyworth.pub'" --no-header --name-width 0 | cut -d" " -f1 -)
 if [ "$BUTTLER_KEY" = "" ]; then
 	echo -e "${BROWN}Uploading server's public key to drive...${NC}"
     BUTTLER_KEY= $($GDRIVE upload "$KEY_DIR/alfred.pennyworth.pub" -p $KEYS_FOLDER | cut -d$"\n" -f2 - | cut -d" " -f2 -)

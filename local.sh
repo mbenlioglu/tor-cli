@@ -42,19 +42,19 @@ fi
 
 # Check if drive folders for tor-cli exists, create if necessary
 echo -e "${BROWN}Checking drive folders...${NC}"
-GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header | cut -d" " -f 1 -)
+GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$GDRIVE_HOME" ]; then
     GDRIVE_HOME=$($GDRIVE mkdir "$TOR_CLI_HOME" | cut -d" " -f 2 -)
 fi
-KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'pub_keys'" --no-header | cut -d" " -f 1 -)
+KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'pub_keys'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$KEYS_FOLDER" ]; then
     KEYS_FOLDER=$($GDRIVE mkdir "pub_keys" -p $GDRIVE_HOME | cut -d" " -f 2 -)
 fi
-TASKS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'tasks'" --no-header | cut -d" " -f 1 -)
+TASKS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'tasks'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$TASKS_FOLDER" ]; then
     TASKS_FOLDER=$($GDRIVE mkdir "tasks" -p $GDRIVE_HOME | cut -d" " -f 2 -)
 fi
-FILES_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'files'" --no-header | cut -d" " -f 1 -)
+FILES_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'files'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$FILES_FOLDER" ]; then
     FILES_FOLDER=$($GDRIVE mkdir "files" -p $GDRIVE_HOME | cut -d" " -f 2 -)
 fi
@@ -65,7 +65,7 @@ if [ -f $USER_CONF ]; then
 fi
 echo -e "${BROWN}Checking your key...${NC}"
 if ! gpg --list-secret-keys "$email" &>/dev/null; then
-    echo -e "${BROWN}No secret key found in your name creating now...${NC}"
+    echo -e "${BROWN}No secret key found in your name. Creating now...${NC}"
 	read -p 'Full Name ($name): ' name
 	read -p 'Email ($email): ' email
 	while true; do
@@ -88,12 +88,13 @@ if [ -z "$down_path" ]; then
     uname -v | grep Microsoft &> /dev/null
     # Get default "Downloads" folder path
     if [ $? -eq 0 ]; then
-        down_path=$(wslpath $(reg.exe query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" /v {374DE290-123F-4565-9164-39C4925E467B} | grep {374DE290-123F-4565-9164-39C4925E467B} | rev | cut -d" " -f1 | rev | sed 's/\r$//'))
+        down_path=$(wslpath $(reg.exe query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"\
+                    /v {374DE290-123F-4565-9164-39C4925E467B} | grep {374DE290-123F-4565-9164-39C4925E467B} | rev |\
+                    cut -d" " -f1 | rev | sed 's/\r$//'))
     else
         down_path=~/Downloads
     fi
-    echo -n "Enter Data download path (default: $down_path): "
-    read down_path
+    read -ei "$down_path" -p "Enter Data download path: " down_path
     echo "data_path=$down_path" >> $USER_CONF
     if [ ! -d "$down_path" ]; then
         mkdir -p $down_path
@@ -101,13 +102,13 @@ if [ -z "$down_path" ]; then
 fi
 
 # Export users's public key if not exported yet
-PUBKEY_FILE=$email.asc
-if [ ! -f $KEY_DIR/$PUBKEY_FILE ]; then
-    gpg --export $email > $KEY_DIR/$PUBKEY_FILE
+PUBKEY_FILE=$email.pub
+if [ ! -f "$KEY_DIR/$PUBKEY_FILE" ]; then
+    gpg --export $email > "$KEY_DIR/$PUBKEY_FILE"
 fi
 
 # Check drive for key upload if not exists
-PUBKEY_DRIVE=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = '$PUBKEY_FILE'" --no-header | cut -d" " -f1 -)
+PUBKEY_DRIVE=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = '$PUBKEY_FILE'" --no-header --name-width 0 | cut -d" " -f1 -)
 if [ -z "$PUBKEY_DRIVE" ]; then
 	echo -e "${BROWN}Uploading your public key to drive...${NC}"
     PUBKEY_DRIVE= $($GDRIVE upload "$KEY_DIR/$PUBKEY_FILE" -p $KEYS_FOLDER | cut -d$"\n" -f2 - | cut -d" " -f2 -)
@@ -117,7 +118,7 @@ elif [ "$update_drive" = true ]; then
 fi
 
 # Get remote buttler's public key
-BUTTLER_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = 'alfred.pennyworth.asc'" --no-header | cut -d" " -f1 -)
+BUTTLER_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = 'alfred.pennyworth.pub'" --no-header --name-width 0 | cut -d" " -f1 -)
 if [ -z "$BUTTLER_KEY" ]; then
     echo "Uh oh. Your buttler hasn't put his public key to drive. Are you sure he's online?"
     exit 1
@@ -133,9 +134,9 @@ echo "$link" | gpg -eu "$email" -r "alfred.pennyworth@wayneenterprises.com" --tr
 $GDRIVE upload -p "$TASKS_FOLDER" --delete "$email.task"
 
 # Wait for torrent to upload drive (track progress, wait for file id)
-nohup $BIN_DIR/dataTrack.sh "$email" "$down_path" > "$TOR_CLI_HOME/tracker.out" &
+nohup $BIN_DIR/dataTrack.sh "$email" "$pass" "$down_path" &> /dev/null &
 echo $! > "$TOR_CLI_HOME/tracker.pid"
 
 echo -e "${BROWN}Your request has been sent. A process is waiting on the background to download your file when ready."
-echo -e "You can track the progress with 'tail -f \$TOR_CLI_HOME/tracker.out' command."
+echo -e "You can track the progress with 'tail -f $TOR_CLI_HOME/tracker.out' command."
 echo -e "${GREEN}Done.${NC}"

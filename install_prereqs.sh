@@ -62,7 +62,7 @@ if [ "$1" -eq "remote" ]; then
     cp -rf ./bin/remote/. $BIN_DIR/
     deluged && sleep 1; deluge-console plugin -e Execute
 elif [ "$!" -eq "local" ]; then
-    echo y | apt-get install gnupg
+    echo y | apt-get install gnupg pigz
     cp -rf ./bin/local/. $BIN_DIR/
 else
     echo -e "${RED} wrong parameter${NC}"
