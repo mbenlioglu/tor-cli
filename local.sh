@@ -27,7 +27,7 @@ fi
 # Check if packages are installed
 if !([ -f $GDRIVE ] && dpkg-query -W gnupg &>/dev/null); then
     echo -e "${BROWN}Missing packages detected! They will now be installed. Script might request elevation${NC}"
-	./install_prerqs.sh local
+	./install_prereqs.sh local
 fi
 
 # Change user if requested
@@ -66,8 +66,8 @@ fi
 echo -e "${BROWN}Checking your key...${NC}"
 if ! gpg --list-secret-keys "$email" &>/dev/null; then
     echo -e "${BROWN}No secret key found in your name. Creating now...${NC}"
-	read -p 'Full Name ($name): ' name
-	read -p 'Email ($email): ' email
+	read -ei "$name" -p 'Full Name: ' name
+	read -ei "$email" -p 'Email: ' email
 	while true; do
 	    read -sp 'Password: ' pass
 	    echo

@@ -25,7 +25,7 @@ fi
 # Check if packages are installed
 if !([ -f $GDRIVE ] && dpkg-query -W pigz deluged deluge-console gnupg &>/dev/null); then
     echo -e "${BROWN}Missing packages detected! They will now be installed. Script might request elevation${NC}"
-    ./install_prerqs.sh remote
+    ./install_prereqs.sh remote
 fi
 
 # Change user if requested
