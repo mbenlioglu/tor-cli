@@ -79,7 +79,7 @@ if ! gpg --list-secret-keys "$email" &>/dev/null; then
 	    [ "$pass" = "$pass2" ] && break
 	    echo "Passwords don't match! Please try again"
 	done
-    echo -e "name=$name\nemail=$email" > $USER_CONF
+    echo -e "name=\"$name\"\nemail=\"$email\"" > $USER_CONF
 	eval "cat > .userkey <<EOF
 $(<gpg_gen_template.txt)
 EOF"

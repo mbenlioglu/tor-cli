@@ -32,8 +32,8 @@ fi
 # Wait task file from drive (check every minute)
 while true; do
     TASKS=$($GDRIVE list -q "'$TASKS_FOLDER' in parents and name contains 'task'" --no-header --name-width 0)
-    TASK_ID=$(echo $TASKS | cut -d" " -f1 - | cut -d$'\n' -f1 -)
-    TASK_NAME=$(echo $TASKS | cut -d" " -f4 - | cut -d$'\n' -f1 - | rev | cut -d. -f2- - | rev)
+    TASK_ID=$(echo "$TASKS" | cut -d" " -f1 - | cut -d$'\n' -f1 -)
+    TASK_NAME=$(echo "$TASKS" | cut -d" " -f4 - | cut -d$'\n' -f1 - | rev | cut -d. -f2- - | rev)
     if [ -z "$TASKS" ]; then
         sleep 60
     else

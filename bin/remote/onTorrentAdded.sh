@@ -9,7 +9,7 @@ torrentID=$1
 torrentName=$2
 torrentPath=$3
 
-RECIPENT=$(echo $torrentPath | rev | cut -d"/" -f2 - | rev)
+RECIPENT=$(echo "$torrentPath" | rev | cut -d"/" -f1 - | rev)
 # Get home folder id from drive
 GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$GDRIVE_HOME" ]; then
