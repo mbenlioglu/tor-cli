@@ -140,7 +140,7 @@ $GDRIVE upload -p "$TASKS_FOLDER" --delete "$email.task"
 if [ -f "$HOME/$TOR_CLI_HOME/tracker.pid" ]; then
     echo "Multiple torrent requests currently not supported please wait your previous torrent to finish"
 else
-    nohup $BIN_DIR/dataTrack.sh "$email" "$pass" "$down_path" &> /dev/null &
+    nohup $BIN_DIR/dataTrack.sh "$email" "$pass" "$down_path" > /dev/null 2>&1 &
     echo $! > "$HOME/$TOR_CLI_HOME/tracker.pid"
 fi
 
