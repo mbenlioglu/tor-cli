@@ -91,7 +91,7 @@ elif [ "$update_drive" = true ]; then
 fi
 
 # Wait task file from drive
-if [ -f "$HOME/$TOR_CLI_HOME/taswait.pid" ]; then
+if [ -f "$HOME/$TOR_CLI_HOME/taskwait.pid" ]; then
     echo "Already waiting for tasks on the background!. Execute $0 --kill-taskwaiter if you want to kill background process."
 else
     nohup $BIN_DIR/taskWait.sh > "$HOME/$TOR_CLI_HOME/taskwait.out" 2>&1 &

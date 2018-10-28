@@ -44,7 +44,7 @@ if [ "$1" = "remote" ]; then
     echo "{
   \"file\": 1, 
   \"format\": 1
-}{s
+}{
   \"commands\": [
     [
       \"0\", 
