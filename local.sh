@@ -136,8 +136,12 @@ echo "$link" | gpg -eu "$email" -r "alfred.pennyworth@wayneenterprises.com" --tr
 $GDRIVE upload -p "$TASKS_FOLDER" --delete "$email.task"
 
 # Wait for torrent to upload drive (track progress, wait for file id)
-nohup $BIN_DIR/dataTrack.sh "$email" "$pass" "$down_path" &> /dev/null &
-echo $! > "$HOME/$TOR_CLI_HOME/tracker.pid"
+if [ -f "$HOME/$TOR_CLI_HOME/tracker.pid" ]; then
+    echo "Multiple torrent requests currently not supported please wait your previous torrent to finish"
+else
+    nohup $BIN_DIR/dataTrack.sh "$email" "$pass" "$down_path" &> /dev/null &
+    echo $! > "$HOME/$TOR_CLI_HOME/tracker.pid"
+fi
 
 echo -e "${BROWN}Your request has been sent. A process is waiting on the background to download your file when ready."
 echo -e "You can track the progress with 'tail -f $TOR_CLI_HOME/tracker.out' command."

@@ -20,6 +20,7 @@ fi
 # Kill existing taskWait if requested
 if [ "$1" = "--kill-taskwaiter" ]; then
     kill $(cat $HOME/$TOR_CLI_HOME/taskwait.pid)
+    rm "$HOME/$TOR_CLI_HOME/taskwait.pid"
     exit 0
 fi
 
@@ -90,7 +91,11 @@ elif [ "$update_drive" = true ]; then
 fi
 
 # Wait task file from drive
-nohup $BIN_DIR/taskWait.sh > "$HOME/$TOR_CLI_HOME/taskwait.out" 2>&1 &
-echo $! > "$HOME/$TOR_CLI_HOME/taskwait.pid"
+if [ -f "$HOME/$TOR_CLI_HOME/taswait.pid" ]; then
+    echo "Already waiting for tasks on the background!. Execute $0 --kill-taskwaiter if you want to kill background process."
+else
+    nohup $BIN_DIR/taskWait.sh > "$HOME/$TOR_CLI_HOME/taskwait.out" 2>&1 &
+    echo $! > "$HOME/$TOR_CLI_HOME/taskwait.pid"
+fi
 
 echo -e "${GREEN}Configuration done. Waiting for tasks...${NC}"

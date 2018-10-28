@@ -60,3 +60,6 @@ if [ ! -z "$TASK_ID" ]; then
 fi
 $GDRIVE delete "$PROGRESS" &> /dev/null
 $GDRIVE delete "$FILE" &> /dev/null
+
+# Remove pid entry
+rm "$HOME/$TOR_CLI_HOME/tracker.pid"
