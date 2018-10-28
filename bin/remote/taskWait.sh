@@ -5,11 +5,11 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-TOR_CLI_HOME='.torcli'
-BIN_DIR='~/$TOR_CLI_HOME/bin'
-DWN_DIR='~/$TOR_CLI_HOME/downloads'
-KEY_DIR='~/$TOR_CLI_HOME/pub_keys'
-GDRIVE='$BIN_DIR/gdrive'
+TOR_CLI_HOME=".torcli"
+BIN_DIR="$HOME/$TOR_CLI_HOME/bin"
+DWN_DIR="$HOME/$TOR_CLI_HOME/downloads"
+KEY_DIR="$HOME/$TOR_CLI_HOME/pub_keys"
+GDRIVE="$BIN_DIR/gdrive"
 
 # Check drie folders
 GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)

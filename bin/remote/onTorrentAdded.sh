@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-TOR_CLI_HOME='.torcli'
-BIN_DIR='~/$TOR_CLI_HOME/bin'
-DWN_DIR='~/$TOR_CLI_HOME/downloads'
-KEY_DIR='~/$TOR_CLI_HOME/pub_keys'
-GDRIVE='$BIN_DIR/gdrive'
+TOR_CLI_HOME=".torcli"
+BIN_DIR="$HOME/$TOR_CLI_HOME/bin"
+DWN_DIR="$HOME/$TOR_CLI_HOME/downloads"
+KEY_DIR="$HOME/$TOR_CLI_HOME/pub_keys"
+GDRIVE="$BIN_DIR/gdrive"
 
 torrentID=$1
 torrentName=$2

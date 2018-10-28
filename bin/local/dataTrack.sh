@@ -5,11 +5,11 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-TOR_CLI_HOME='.torcli'
-BIN_DIR='~/$TOR_CLI_HOME/bin'
-DWN_DIR='~/$TOR_CLI_HOME/downloads'
-KEY_DIR='~/$TOR_CLI_HOME/pub_keys'
-GDRIVE='$BIN_DIR/gdrive'
+TOR_CLI_HOME=".torcli"
+BIN_DIR="$HOME/$TOR_CLI_HOME/bin"
+DWN_DIR="$HOME/$TOR_CLI_HOME/downloads"
+KEY_DIR="$HOME/$TOR_CLI_HOME/pub_keys"
+GDRIVE="$BIN_DIR/gdrive"
 
 email=$1
 pass=$2
@@ -40,14 +40,14 @@ while true; do
     if [ -z "$FILE" ]; then
         # Print download status of the torrent
         if [ -z "PROGRESS" ]; then
-            echo "No progress has been submitted by the remote server yet!!" > "$TOR_CLI_HOME/tracker.out"
+            echo "No progress has been submitted by the remote server yet!!" > "$HOME/$TOR_CLI_HOME/tracker.out"
         else
-            $GDRIVE download --stdout "$PROGRESS" | gpg --batch --quiet --passphrase "$pass" -d - > "$TOR_CLI_HOME/tracker.out"
+            $GDRIVE download --stdout "$PROGRESS" | gpg --batch --quiet --passphrase "$pass" -d - > "$HOME/$TOR_CLI_HOME/tracker.out"
         fi
         sleep 60;
     else
         # Download file, decrypt, unpack archieve
-        echo "Downloading your file from drive..." > "$TOR_CLI_HOME/tracker.out"
+        echo "Downloading your file from drive..." > "$HOME/$TOR_CLI_HOME/tracker.out"
         $GDRIVE download --stdout "$FILE" | gpg --batch --quiet --passphrase "$pass" -d - | tar -I"unpigz" -xf - -C "dwn_path"
         break
     fi

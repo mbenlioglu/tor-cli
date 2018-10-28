@@ -5,13 +5,13 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-TOR_CLI_HOME='.torcli'
-BIN_DIR='~/$TOR_CLI_HOME/bin'
-DWN_DIR='~/$TOR_CLI_HOME/downloads'
-KEY_DIR='~/$TOR_CLI_HOME/pub_keys'
+TOR_CLI_HOME=".torcli"
+BIN_DIR="$HOME/$TOR_CLI_HOME/bin"
+DWN_DIR="$HOME/$TOR_CLI_HOME/downloads"
+KEY_DIR="$HOME/$TOR_CLI_HOME/pub_keys"
 
-GDRIVE='$BIN_DIR/gdrive'
-USER_CONF='~/$TOR_CLI_HOME/user.conf'
+GDRIVE="$BIN_DIR/gdrive"
+USER_CONF="$HOME/$TOR_CLI_HOME/user.conf"
 
 # Distro check
 if [ "$(expr substr $(uname -s) 1 5)" != "Linux" ]; then
@@ -21,12 +21,14 @@ fi
 
 # Kill existing dataTracker if requested
 if [ "$1" = "--kill-tracker" ]; then
-    kill $(cat $TOR_CLI_HOME/tracker.pid)
+    kill $(cat $HOME/$TOR_CLI_HOME/tracker.pid)
+    exit 0
 fi
 
 # Check if packages are installed
 if !([ -f $GDRIVE ] && dpkg-query -W gnupg &>/dev/null); then
     echo -e "${BROWN}Missing packages detected! They will now be installed. Script might request elevation${NC}"
+    mkdir -p "$BIN_DIR" "$DWN_DIR" "$KEY_DIR"
 	./install_prereqs.sh local
 fi
 
@@ -76,7 +78,7 @@ if ! gpg --list-secret-keys "$email" &>/dev/null; then
 	    [ "$pass" = "$pass2" ] && break
 	    echo "Passwords don't match! Please try again"
 	done
-    echo -e 'name="$name"\nemail="$email"' > $USER_CONF
+    echo -e "name=$name\nemail=$email" > $USER_CONF
 	eval "cat > .userkey <<EOF
 $(<gpg_gen_template.txt)
 EOF"
@@ -95,7 +97,7 @@ if [ -z "$down_path" ]; then
         down_path=~/Downloads
     fi
     read -ei "$down_path" -p "Enter Data download path: " down_path
-    echo "data_path=$down_path" >> $USER_CONF
+    echo "down_path=$down_path" >> $USER_CONF
     if [ ! -d "$down_path" ]; then
         mkdir -p $down_path
     fi
@@ -111,7 +113,7 @@ fi
 PUBKEY_DRIVE=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = '$PUBKEY_FILE'" --no-header --name-width 0 | cut -d" " -f1 -)
 if [ -z "$PUBKEY_DRIVE" ]; then
 	echo -e "${BROWN}Uploading your public key to drive...${NC}"
-    PUBKEY_DRIVE= $($GDRIVE upload "$KEY_DIR/$PUBKEY_FILE" -p $KEYS_FOLDER | cut -d$"\n" -f2 - | cut -d" " -f2 -)
+    PUBKEY_DRIVE=$($GDRIVE upload "$KEY_DIR/$PUBKEY_FILE" -p $KEYS_FOLDER | cut -d$'\n' -f2 - | cut -d" " -f2 -)
 elif [ "$update_drive" = true ]; then
     echo -e "${BROWN}Updating your public key in drive...${NC}"
     $GDRIVE update "$PUBKEY_DRIVE" "$KEY_DIR/$PUBKEY_FILE" &> /dev/null
@@ -127,7 +129,7 @@ else
 fi
 
 # Ask for torrent link
-read -p 'Please enter the link of torrent file or magnet link: ' link
+read -p "Please enter the link of torrent file or magnet link: " link
 
 # Create task file, encrypt and upload
 echo "$link" | gpg -eu "$email" -r "alfred.pennyworth@wayneenterprises.com" --trust-model always - > "$email.task"
@@ -135,7 +137,7 @@ $GDRIVE upload -p "$TASKS_FOLDER" --delete "$email.task"
 
 # Wait for torrent to upload drive (track progress, wait for file id)
 nohup $BIN_DIR/dataTrack.sh "$email" "$pass" "$down_path" &> /dev/null &
-echo $! > "$TOR_CLI_HOME/tracker.pid"
+echo $! > "$HOME/$TOR_CLI_HOME/tracker.pid"
 
 echo -e "${BROWN}Your request has been sent. A process is waiting on the background to download your file when ready."
 echo -e "You can track the progress with 'tail -f $TOR_CLI_HOME/tracker.out' command."
