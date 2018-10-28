@@ -12,7 +12,7 @@ torrentPath=$3
 # Terminate progress tracker process
 
 # Archieve and encrypt data with public key
-RECIPENT=$(echo $torrentPath | rev | cut -d"/" -f2 - | rev)
+RECIPENT=$(echo $torrentPath | rev | cut -d"/" -f2- - | rev)
 tar -I"pigz" -cf "$torrentPath/$RECIPENT.tgz" "$torrentPath/$torrentName"
 
 # Check drie folders

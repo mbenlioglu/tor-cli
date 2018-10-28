@@ -41,6 +41,7 @@ curl -L $dwnlink -o $GDRIVE --progress-bar
 #Install deluge, gnupg, pigz
 if [ "$1" = "remote" ]; then
     echo y | sudo apt-get install pigz deluged deluge-console gnupg
+    mkdir -p ~/.config/deluge
     echo "{
   \"file\": 1, 
   \"format\": 1

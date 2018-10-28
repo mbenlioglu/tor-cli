@@ -22,6 +22,7 @@ fi
 # Kill existing dataTracker if requested
 if [ "$1" = "--kill-tracker" ]; then
     kill $(cat $HOME/$TOR_CLI_HOME/tracker.pid)
+    rm "$HOME/$TOR_CLI_HOME/tracker.pid"
     exit 0
 fi
 
@@ -144,5 +145,5 @@ else
 fi
 
 echo -e "${BROWN}Your request has been sent. A process is waiting on the background to download your file when ready."
-echo -e "You can track the progress with 'tail -f $TOR_CLI_HOME/tracker.out' command."
+echo -e "You can track the progress with 'tail -f ~/$TOR_CLI_HOME/tracker.out' command."
 echo -e "${GREEN}Done.${NC}"
