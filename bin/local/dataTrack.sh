@@ -44,7 +44,7 @@ while true; do
         else
             $GDRIVE download --stdout "$PROGRESS" | gpg --batch --quiet --passphrase "$pass" -d - > "$HOME/$TOR_CLI_HOME/tracker.out"
         fi
-        sleep 60;
+        sleep 10;
     else
         # Download file, decrypt, unpack archieve
         echo "Downloading your file from drive..." > "$HOME/$TOR_CLI_HOME/tracker.out"

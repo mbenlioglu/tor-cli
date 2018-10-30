@@ -12,8 +12,8 @@ torrentPath=$3
 # Terminate progress tracker process
 
 # Archieve and encrypt data with public key
-RECIPENT=$(echo "$torrentPath" | rev | cut -d"/" -f1 - | rev)
-tar -I"pigz" -cf "$torrentPath/$RECIPENT.tgz" "$torrentPath/$torrentName"
+RECIPIENT=$(echo "$torrentPath" | rev | cut -d"/" -f1 - | rev) # this must change with task naming convention
+tar -I"pigz" -cf "$torrentPath/$RECIPIENT.tgz" "$torrentPath/$torrentName"
 
 # Check drie folders
 GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)
@@ -34,24 +34,24 @@ if [ -z "$FILES_FOLDER" ]; then
 fi
 
 # Test if recipient key exists
-if ! gpg --list-keys "$RECIPENT" &> /dev/null; then
-    if [ -f "$KEY_DIR/$RECIPENT.pub" ]; then
-        gpg --import "$KEY_DIR/$RECIPENT.pub" &> /dev/null
+if ! gpg --list-keys "$RECIPIENT" &> /dev/null; then
+    if [ -f "$KEY_DIR/$RECIPIENT.pub" ]; then
+        gpg --import "$KEY_DIR/$RECIPIENT.pub" &> /dev/null
     else
         while true; do
-            REC_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = '$RECIPENT.pub'" --no-header --name-width 0 | cut -d" " -f1 -)
+            REC_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = '$RECIPIENT.pub'" --no-header --name-width 0 | cut -d" " -f1 -)
             if [ -z "REC_KEY" ]; then
                 sleep 60;
             else
                 $GDRIVE download -f --path "$KEY_DIR" $REC_KEY &> /dev/null
-                gpg --import "$KEY_DIR/$RECIPENT.pub" &> /dev/null
+                gpg --import "$KEY_DIR/$RECIPIENT.pub" &> /dev/null
             fi
         done
     fi
 fi
 
-gpg -z 0 -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPENT" --trust-model always -output - "$torrentPath/$RECIPENT.tgz" \
-    | $GDRIVE upload - "$RECIPENT.tgz.gpg" -p $FILES_FOLDER &>/dev/null
+gpg -z 0 -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPIENT" --trust-model always -output - "$torrentPath/$RECIPIENT.tgz" \
+    | $GDRIVE upload - "$RECIPIENT.tgz.gpg" -p $FILES_FOLDER &>/dev/null
 
 # Remove data
 deluge-console rm $torrentID --remove_data

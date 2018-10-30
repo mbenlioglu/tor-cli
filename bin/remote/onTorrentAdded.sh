@@ -9,7 +9,7 @@ torrentID=$1
 torrentName=$2
 torrentPath=$3
 
-RECIPENT=$(echo "$torrentPath" | rev | cut -d"/" -f1 - | rev)
+RECIPIENT=$(echo "$torrentPath" | rev | cut -d"/" -f1 - | rev) # this must change with task naming convention
 # Get home folder id from drive
 GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$GDRIVE_HOME" ]; then
@@ -29,29 +29,31 @@ if [ -z "$FILES_FOLDER" ]; then
 fi
 
 # Test if recipient key exists
-if ! gpg --list-keys "$RECIPENT" &> /dev/null; then
-    if [ -f "$KEY_DIR/$RECIPENT.pub" ]; then
-        gpg --import "$KEY_DIR/$RECIPENT.pub" &> /dev/null
+if ! gpg --list-keys "$RECIPIENT" &> /dev/null; then
+    if [ -f "$KEY_DIR/$RECIPIENT.pub" ]; then
+        gpg --import "$KEY_DIR/$RECIPIENT.pub" &> /dev/null
     else
         while true; do
-            REC_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = '$RECIPENT.pub'" --no-header --name-width 0 | cut -d" " -f1 -)
+            REC_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = '$RECIPIENT.pub'" --no-header --name-width 0 | cut -d" " -f1 -)
             if [ -z "REC_KEY" ]; then
-                sleep 60;
+                sleep 60
             else
                 $GDRIVE download -f --path "$KEY_DIR" $REC_KEY &> /dev/null
-                gpg --import "$KEY_DIR/$RECIPENT.pub" &> /dev/null
+                gpg --import "$KEY_DIR/$RECIPIENT.pub" &> /dev/null
             fi
         done
     fi
 fi
 
 # Track progress and put it to drive async
-touch "$DWN_DIR/$RECIPENT.progress"
+touch "$torrentPath/$RECIPIENT.progress"
+PROGRESS=$($GDRIVE upload "$torrentPath/$RECIPIENT.progress" -p $FILES_FOLDER | cut -d$'\n' -f2 - | cut -d" " -f2 -)
 while true; do
-    if grep "State: Downloading" "$DWN_DIR/$RECIPENT.progress" &> /dev/null; then
-        deluge-console info $torrentID > "$DWN_DIR/$RECIPENT.progress"
-        gpg -z 0 -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPENT" --trust-model always -output - "$DWN_DIR/$RECIPENT.progress" \
-            | $GDRIVE upload - "$RECIPENT.progress.gpg" -p $FILES_FOLDER &>/dev/null
+    if grep "State: Downloading" "$$torrentPath/$RECIPIENT.progress" &> /dev/null; then
+        deluge-console info $torrentID > "$torrentPath/$RECIPIENT.progress"
+        gpg -z 0 -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPIENT" --trust-model always "$torrentPath/$RECIPIENT.progress"
+        $GDRIVE update "$PROGRESS" "$torrentPath/$RECIPIENT.progress.gpg" &>/dev/null
+        sleep 10
     else
         break
     fi

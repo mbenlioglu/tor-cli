@@ -67,7 +67,7 @@ if [ -f $USER_CONF ]; then
     source $USER_CONF
 fi
 echo -e "${BROWN}Checking your key...${NC}"
-if ! gpg --list-secret-keys "$email" &>/dev/null; then
+if [ -z "$email" ]; then
     echo -e "${BROWN}No secret key found in your name. Creating now...${NC}"
 	read -ei "$name" -p 'Full Name: ' name
 	read -ei "$email" -p 'Email: ' email
@@ -80,12 +80,14 @@ if ! gpg --list-secret-keys "$email" &>/dev/null; then
 	    echo "Passwords don't match! Please try again"
 	done
     echo -e "name=\"$name\"\nemail=\"$email\"" > $USER_CONF
-	eval "cat > .userkey <<EOF
+    if ! gpg --list-secret-keys "$email" &>/dev/null; then
+        eval "cat > .userkey <<EOF
 $(<gpg_gen_template.txt)
 EOF"
-    gpg --batch --gen-key .userkey
-	shred -ufn 5 .userkey
-	update_drive=true
+        gpg --batch --gen-key .userkey
+        shred -ufn 5 .userkey
+        update_drive=true
+    fi
 fi
 if [ -z "$down_path" ]; then
     uname -v | grep Microsoft &> /dev/null
