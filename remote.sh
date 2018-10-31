@@ -74,11 +74,8 @@ EOF"
 	shred -ufn 5 .buttler
 	update_drive=true
 fi
-
 # Export buttler's public key if not exported yet
-if [ ! -f $KEY_DIR/alfred.pennyworth.pub ]; then
-    gpg --export alfred.pennyworth@wayneenterprises.com > $KEY_DIR/alfred.pennyworth.pub
-fi
+gpg --export alfred.pennyworth@wayneenterprises.com > $KEY_DIR/alfred.pennyworth.pub
 
 # Upload buttler's key if not uploaded yet
 BUTTLER_KEY=$($GDRIVE list -q "'$KEYS_FOLDER' in parents and name = 'alfred.pennyworth.pub'" --no-header --name-width 0 | cut -d" " -f1 -)

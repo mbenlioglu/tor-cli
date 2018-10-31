@@ -80,15 +80,20 @@ if [ -z "$email" ]; then
 	    echo "Passwords don't match! Please try again"
 	done
     echo -e "name=\"$name\"\nemail=\"$email\"" > $USER_CONF
-    if ! gpg --list-secret-keys "$email" &>/dev/null; then
-        eval "cat > .userkey <<EOF
+fi
+
+if ! gpg --list-secret-keys "$email" &>/dev/null; then
+    eval "cat > .userkey <<EOF
 $(<gpg_gen_template.txt)
 EOF"
-        gpg --batch --gen-key .userkey
-        shred -ufn 5 .userkey
-        update_drive=true
-    fi
+    gpg --batch --gen-key .userkey
+    shred -ufn 5 .userkey
+    update_drive=true
 fi
+# Export users's public key if not exported yet
+PUBKEY_FILE=$email.pub
+gpg --export $email > "$KEY_DIR/$PUBKEY_FILE"
+
 if [ -z "$down_path" ]; then
     uname -v | grep Microsoft &> /dev/null
     # Get default "Downloads" folder path
@@ -104,12 +109,6 @@ if [ -z "$down_path" ]; then
     if [ ! -d "$down_path" ]; then
         mkdir -p $down_path
     fi
-fi
-
-# Export users's public key if not exported yet
-PUBKEY_FILE=$email.pub
-if [ ! -f "$KEY_DIR/$PUBKEY_FILE" ]; then
-    gpg --export $email > "$KEY_DIR/$PUBKEY_FILE"
 fi
 
 # Check drive for key upload if not exists
@@ -136,7 +135,7 @@ read -p "Please enter the link of torrent file or magnet link: " link
 
 # Create task file, encrypt and upload
 echo "$link" | gpg -eu "$email" -r "alfred.pennyworth@wayneenterprises.com" --trust-model always - > "$email.task"
-$GDRIVE upload -p "$TASKS_FOLDER" --delete "$email.task"
+$GDRIVE upload -p "$TASKS_FOLDER" --delete "$email.task" &> /dev/null
 
 # Wait for torrent to upload drive (track progress, wait for file id)
 if [ -f "$HOME/$TOR_CLI_HOME/tracker.pid" ]; then
