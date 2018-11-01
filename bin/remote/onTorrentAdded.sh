@@ -40,6 +40,7 @@ if ! gpg --list-keys "$RECIPIENT" &> /dev/null; then
             else
                 $GDRIVE download -f --path "$KEY_DIR" $REC_KEY &> /dev/null
                 gpg --import "$KEY_DIR/$RECIPIENT.pub" &> /dev/null
+                break
             fi
         done
     fi
