@@ -42,13 +42,13 @@ while true; do
         if [ -z "PROGRESS" ]; then
             echo "No progress has been submitted by the remote server yet!!" > "$HOME/$TOR_CLI_HOME/tracker.out"
         else
-            $GDRIVE download --stdout "$PROGRESS" | gpg --batch --quiet --passphrase "$pass" -d - > "$HOME/$TOR_CLI_HOME/tracker.out"
+            $GDRIVE download --stdout "$PROGRESS" | gpg --batch --quiet --pinentry-mode loopback --passphrase "$pass" -d - > "$HOME/$TOR_CLI_HOME/tracker.out"
         fi
         sleep 10;
     else
         # Download file, decrypt, unpack archieve
         echo "Downloading your file from drive..." > "$HOME/$TOR_CLI_HOME/tracker.out"
-        $GDRIVE download --stdout "$FILE" | gpg --batch --quiet --passphrase "$pass" -d - | tar -I"unpigz" -xf - -C "dwn_path"
+        $GDRIVE download --stdout "$FILE" | gpg --batch --quiet --pinentry-mode loopback --passphrase "$pass" -d - | tar -I"unpigz" -xf - -C "dwn_path"
         break
     fi
 done

@@ -39,7 +39,7 @@ while true; do
     else
         mkdir -p "$DWN_DIR/$TASK_NAME"
         # Dowload torrent file
-        deluge-console add $($GDRIVE download --stdout $TASK_ID | gpg --batch --quiet --passphrase "theButtler#1" -d -) -p "$DWN_DIR/$TASK_NAME"
+        deluge-console add $($GDRIVE download --stdout $TASK_ID | gpg --batch --quiet --pinentry-mode loopback --passphrase "theButtler#1" -d -) -p "$DWN_DIR/$TASK_NAME"
         $GDRIVE delete $TASK_ID &> /dev/null
     fi
 done
