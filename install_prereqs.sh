@@ -4,8 +4,13 @@
     # exit $?
 # fi
 
-TOR_CLI_HOME=".torcli"
-BIN_DIR="$HOME/$TOR_CLI_HOME/bin"
+if [ -z "$TOR_CLI_HOME" ]; then
+    # Set Environment
+    echo "export TOR_CLI_HOME=$HOME/.torcli" >> ~/.bashrc
+    source ~/.bashrc
+fi
+
+BIN_DIR="$TOR_CLI_HOME/bin"
 GDRIVE="$BIN_DIR/gdrive"
 
 BROWN='\033[0;33m'
@@ -71,9 +76,5 @@ else
 fi
 
 chmod u+x $BIN_DIR/*
-
-# Set Environment
-echo "export TOR_CLI_HOME=$TOR_CLI_HOME" >> ~/.bashrc
-source ~/.bashrc
 
 echo -e "${GREEN}Done.${NC}"

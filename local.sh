@@ -5,13 +5,12 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-TOR_CLI_HOME=".torcli"
-BIN_DIR="$HOME/$TOR_CLI_HOME/bin"
-DWN_DIR="$HOME/$TOR_CLI_HOME/downloads"
-KEY_DIR="$HOME/$TOR_CLI_HOME/pub_keys"
+BIN_DIR="$TOR_CLI_HOME/bin"
+DWN_DIR="$TOR_CLI_HOME/downloads"
+KEY_DIR="$TOR_CLI_HOME/pub_keys"
 
 GDRIVE="$BIN_DIR/gdrive"
-USER_CONF="$HOME/$TOR_CLI_HOME/user.conf"
+USER_CONF="$TOR_CLI_HOME/user.conf"
 
 # Distro check
 if [ "$(expr substr $(uname -s) 1 5)" != "Linux" ]; then
@@ -21,8 +20,8 @@ fi
 
 # Kill existing dataTracker if requested
 if [ "$1" = "--kill-tracker" ]; then
-    kill $(cat $HOME/$TOR_CLI_HOME/tracker.pid)
-    rm "$HOME/$TOR_CLI_HOME/tracker.pid"
+    kill $(cat $TOR_CLI_HOME/tracker.pid)
+    rm "$TOR_CLI_HOME/tracker.pid"
     exit 0
 fi
 
@@ -45,9 +44,9 @@ fi
 
 # Check if drive folders for tor-cli exists, create if necessary
 echo -e "${BROWN}Checking drive folders...${NC}"
-GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)
+GDRIVE_HOME=$($GDRIVE list -q "name = '$(basename $TOR_CLI_HOME)'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$GDRIVE_HOME" ]; then
-    GDRIVE_HOME=$($GDRIVE mkdir "$TOR_CLI_HOME" | cut -d" " -f 2 -)
+    GDRIVE_HOME=$($GDRIVE mkdir "$(basename $TOR_CLI_HOME)" | cut -d" " -f 2 -)
 fi
 KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'pub_keys'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$KEYS_FOLDER" ]; then
@@ -102,7 +101,7 @@ if [ -z "$down_path" ]; then
                     /v {374DE290-123F-4565-9164-39C4925E467B} | grep {374DE290-123F-4565-9164-39C4925E467B} | rev |\
                     cut -d" " -f1 | rev | sed 's/\r$//'))
     else
-        down_path=~/Downloads
+        down_path=$HOME/Downloads
     fi
     read -ei "$down_path" -p "Enter Data download path: " down_path
     echo "down_path=$down_path" >> $USER_CONF
@@ -131,18 +130,18 @@ else
 fi
 
 # Ask for torrent link
-read -p "Please enter the link of torrent file or magnet link: " link
+read -ep "Please enter the link of torrent file or magnet link: " link
 
 # Create task file, encrypt and upload
 echo "$link" | gpg -eu "$email" -r "alfred.pennyworth@wayneenterprises.com" --trust-model always - > "$email.task"
 $GDRIVE upload -p "$TASKS_FOLDER" --delete "$email.task" &> /dev/null
 
 # Wait for torrent to upload drive (track progress, wait for file id)
-if [ -f "$HOME/$TOR_CLI_HOME/tracker.pid" ]; then
+if [ -f "$TOR_CLI_HOME/tracker.pid" ]; then
     echo "Multiple torrent requests currently not supported please wait your previous torrent to finish"
 else
     nohup $BIN_DIR/dataTrack.sh "$email" "$pass" "$down_path" > /dev/null 2>&1 &
-    echo $! > "$HOME/$TOR_CLI_HOME/tracker.pid"
+    echo $! > "$TOR_CLI_HOME/tracker.pid"
 fi
 
 echo -e "${BROWN}Your request has been sent. A process is waiting on the background to download your file when ready."

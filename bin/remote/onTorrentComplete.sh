@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-TOR_CLI_HOME=".torcli"
-BIN_DIR="$HOME/$TOR_CLI_HOME/bin"
-DWN_DIR="$HOME/$TOR_CLI_HOME/downloads"
-KEY_DIR="$HOME/$TOR_CLI_HOME/pub_keys"
+BIN_DIR="$TOR_CLI_HOME/bin"
+DWN_DIR="$TOR_CLI_HOME/downloads"
+KEY_DIR="$TOR_CLI_HOME/pub_keys"
 GDRIVE="$BIN_DIR/gdrive"
 
 torrentID=$1
@@ -16,9 +15,9 @@ RECIPIENT=$(echo "$torrentPath" | rev | cut -d"/" -f1 - | rev) # this must chang
 tar -I"pigz" -cf "$torrentPath/$RECIPIENT.tgz" "$torrentPath/$torrentName"
 
 # Check drie folders
-GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)
+GDRIVE_HOME=$($GDRIVE list -q "name = '$(basename $TOR_CLI_HOME)'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$GDRIVE_HOME" ]; then
-    GDRIVE_HOME=$($GDRIVE mkdir "$TOR_CLI_HOME" | cut -d" " -f 2 -)
+    GDRIVE_HOME=$($GDRIVE mkdir "$(basename $TOR_CLI_HOME)" | cut -d" " -f 2 -)
 fi
 KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'pub_keys'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$KEYS_FOLDER" ]; then

@@ -5,10 +5,9 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-TOR_CLI_HOME=".torcli"
-BIN_DIR="$HOME/$TOR_CLI_HOME/bin"
-DWN_DIR="$HOME/$TOR_CLI_HOME/downloads"
-KEY_DIR="$HOME/$TOR_CLI_HOME/pub_keys"
+BIN_DIR="$TOR_CLI_HOME/bin"
+DWN_DIR="$TOR_CLI_HOME/downloads"
+KEY_DIR="$TOR_CLI_HOME/pub_keys"
 GDRIVE="$BIN_DIR/gdrive"
 
 email=$1
@@ -16,9 +15,9 @@ pass=$2
 dwn_path=$3
 
 # Check drie folders
-GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)
+GDRIVE_HOME=$($GDRIVE list -q "name = '$(basename $TOR_CLI_HOME)'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$GDRIVE_HOME" ]; then
-    GDRIVE_HOME=$($GDRIVE mkdir "$TOR_CLI_HOME" | cut -d" " -f 2 -)
+    GDRIVE_HOME=$($GDRIVE mkdir "$(basename $TOR_CLI_HOME)" | cut -d" " -f 2 -)
 fi
 KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'pub_keys'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$KEYS_FOLDER" ]; then
@@ -40,14 +39,14 @@ while true; do
     if [ -z "$FILE" ]; then
         # Print download status of the torrent
         if [ -z "PROGRESS" ]; then
-            echo "No progress has been submitted by the remote server yet!!" > "$HOME/$TOR_CLI_HOME/tracker.out"
+            echo "No progress has been submitted by the remote server yet!!" > "$TOR_CLI_HOME/tracker.out"
         else
-            $GDRIVE download --stdout "$PROGRESS" | gpg --batch --quiet --pinentry-mode loopback --passphrase "$pass" -d - > "$HOME/$TOR_CLI_HOME/tracker.out"
+            $GDRIVE download --stdout "$PROGRESS" | gpg --batch --quiet --pinentry-mode loopback --passphrase "$pass" -d - > "$TOR_CLI_HOME/tracker.out"
         fi
         sleep 10;
     else
         # Download file, decrypt, unpack archieve
-        echo "Downloading your file from drive..." > "$HOME/$TOR_CLI_HOME/tracker.out"
+        echo "Downloading your file from drive..." > "$TOR_CLI_HOME/tracker.out"
         $GDRIVE download --stdout "$FILE" | gpg --batch --quiet --pinentry-mode loopback --passphrase "$pass" -d - | tar -I"unpigz" -xf - -C "dwn_path"
         break
     fi
@@ -62,4 +61,4 @@ $GDRIVE delete "$PROGRESS" &> /dev/null
 $GDRIVE delete "$FILE" &> /dev/null
 
 # Remove pid entry
-rm "$HOME/$TOR_CLI_HOME/tracker.pid"
+rm "$TOR_CLI_HOME/tracker.pid"

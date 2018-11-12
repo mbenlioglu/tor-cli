@@ -5,10 +5,9 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-TOR_CLI_HOME=".torcli"
-BIN_DIR="$HOME/$TOR_CLI_HOME/bin"
-DWN_DIR="$HOME/$TOR_CLI_HOME/downloads"
-KEY_DIR="$HOME/$TOR_CLI_HOME/pub_keys"
+BIN_DIR="$TOR_CLI_HOME/bin"
+DWN_DIR="$TOR_CLI_HOME/downloads"
+KEY_DIR="$TOR_CLI_HOME/pub_keys"
 GDRIVE="$BIN_DIR/gdrive"
 
 # Distro check
@@ -19,8 +18,8 @@ fi
 
 # Kill existing taskWait if requested
 if [ "$1" = "--kill-taskwaiter" ]; then
-    kill $(cat $HOME/$TOR_CLI_HOME/taskwait.pid)
-    rm "$HOME/$TOR_CLI_HOME/taskwait.pid"
+    kill $(cat $TOR_CLI_HOME/taskwait.pid)
+    rm "$TOR_CLI_HOME/taskwait.pid"
     exit 0
 fi
 
@@ -43,9 +42,9 @@ fi
 
 # Check if drive folders for tor-cli exists, create if necessary
 echo -e "${BROWN}Checking drive folders...${NC}"
-GDRIVE_HOME=$($GDRIVE list -q "name = '$TOR_CLI_HOME'" --no-header --name-width 0 | cut -d" " -f 1 -)
+GDRIVE_HOME=$($GDRIVE list -q "name = '$(basename $TOR_CLI_HOME)'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$GDRIVE_HOME" ]; then
-    GDRIVE_HOME=$($GDRIVE mkdir "$TOR_CLI_HOME" | cut -d" " -f 2 -)
+    GDRIVE_HOME=$($GDRIVE mkdir "$(basename $TOR_CLI_HOME)" | cut -d" " -f 2 -)
 fi
 KEYS_FOLDER=$($GDRIVE list -q "'$GDRIVE_HOME' in parents and name = 'pub_keys'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$KEYS_FOLDER" ]; then
@@ -88,11 +87,11 @@ elif [ "$update_drive" = true ]; then
 fi
 
 # Wait task file from drive
-if [ -f "$HOME/$TOR_CLI_HOME/taskwait.pid" ]; then
+if [ -f "$TOR_CLI_HOME/taskwait.pid" ]; then
     echo "Already waiting for tasks on the background!. Execute $0 --kill-taskwaiter if you want to kill background process."
 else
-    nohup $BIN_DIR/taskWait.sh > "$HOME/$TOR_CLI_HOME/taskwait.out" 2>&1 &
-    echo $! > "$HOME/$TOR_CLI_HOME/taskwait.pid"
+    nohup $BIN_DIR/taskWait.sh > "$TOR_CLI_HOME/taskwait.out" 2>&1 &
+    echo $! > "$TOR_CLI_HOME/taskwait.pid"
 fi
 
 echo -e "${GREEN}Configuration done. Waiting for tasks...${NC}"
