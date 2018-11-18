@@ -8,12 +8,7 @@ torrentID=$1
 torrentName=$2
 torrentPath=$3
 
-# Terminate progress tracker process
-
-# Archieve and encrypt data with public key
 RECIPIENT=$(echo "$torrentPath" | rev | cut -d"/" -f1 - | rev) # this must change with task naming convention
-tar -I"pigz" -cf "$torrentPath/$RECIPIENT.tgz" "$torrentPath/$torrentName"
-
 # Check drie folders
 GDRIVE_HOME=$($GDRIVE list -q "name = '$(basename $TOR_CLI_HOME)'" --no-header --name-width 0 | cut -d" " -f 1 -)
 if [ -z "$GDRIVE_HOME" ]; then
@@ -50,9 +45,10 @@ if ! gpg --list-keys "$RECIPIENT" &> /dev/null; then
     fi
 fi
 
-gpg -z 0 -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPIENT" --trust-model always -output - "$torrentPath/$RECIPIENT.tgz" \
+tar -I"pigz" -cf "$torrentPath/$RECIPIENT.tgz" "$torrentPath/$torrentName"
+gpg -z 0 -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPIENT" --trust-model always --output - "$torrentPath/$RECIPIENT.tgz" \
     | $GDRIVE upload - "$RECIPIENT.tgz.gpg" -p $FILES_FOLDER &>/dev/null
 
 # Remove data
-deluge-console rm $torrentID --remove_data
+deluge-console rm $torrentID
 rm -rf "$torrentPath"

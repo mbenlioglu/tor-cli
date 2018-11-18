@@ -48,18 +48,15 @@ fi
 # Track progress and put it to drive async
 PROGRESS=
 while true; do
-    if [ ! -f "$torrentPath/$RECIPIENT.progress" ]; then
-        deluge-console info $torrentID > "$torrentPath/$RECIPIENT.progress"
-        gpg -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPIENT" --trust-model always "$torrentPath/$RECIPIENT.progress"
+    sleep 10
+    deluge-console info $torrentID > "$torrentPath/$RECIPIENT.progress"
+    gpg -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPIENT" --trust-model always "$torrentPath/$RECIPIENT.progress"
+    if [ -z "$PROGRESS" ]; then
         PROGRESS=$($GDRIVE upload "$torrentPath/$RECIPIENT.progress.gpg" -p $FILES_FOLDER | cut -d$'\n' -f2 - | cut -d" " -f2 -)
-        rm -f "$torrentPath/$RECIPIENT.progress.gpg"
-    elif grep "State: Downloading" "$torrentPath/$RECIPIENT.progress" &> /dev/null; then
-        deluge-console info $torrentID > "$torrentPath/$RECIPIENT.progress"
-        gpg -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPIENT" --trust-model always "$torrentPath/$RECIPIENT.progress"
+    elif grep "State: Downloading" "$torrentPath/$RECIPIENT.progress" &>/dev/null; then
         $GDRIVE update "$PROGRESS" "$torrentPath/$RECIPIENT.progress.gpg" &>/dev/null
-        rm -f "$torrentPath/$RECIPIENT.progress.gpg"
-        sleep 10
     else
         break
     fi
+    rm -f "$torrentPath/$RECIPIENT.progress.gpg"
 done

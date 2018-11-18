@@ -94,9 +94,8 @@ PUBKEY_FILE=$email.pub
 gpg --export $email > "$KEY_DIR/$PUBKEY_FILE"
 
 if [ -z "$down_path" ]; then
-    uname -v | grep Microsoft &> /dev/null
-    # Get default "Downloads" folder path
-    if [ $? -eq 0 ]; then
+    # Get default "Downloads" folder path (special check for bash on Windows)
+    if uname -v | grep Microsoft &> /dev/null; then
         down_path=$(wslpath $(reg.exe query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"\
                     /v {374DE290-123F-4565-9164-39C4925E467B} | grep {374DE290-123F-4565-9164-39C4925E467B} | rev |\
                     cut -d" " -f1 | rev | sed 's/\r$//'))

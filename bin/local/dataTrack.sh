@@ -47,7 +47,7 @@ while true; do
     else
         # Download file, decrypt, unpack archieve
         echo "Downloading your file from drive..." > "$TOR_CLI_HOME/tracker.out"
-        $GDRIVE download --stdout "$FILE" | gpg --batch --quiet --pinentry-mode loopback --passphrase "$pass" -d - | tar -I"unpigz" -xf - -C "dwn_path"
+        $GDRIVE download --stdout "$FILE" | gpg --batch --quiet --pinentry-mode loopback --passphrase "$pass" -d - | tar -I"unpigz" -xf - -C "$dwn_path"
         break
     fi
 done
