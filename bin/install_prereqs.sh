@@ -6,8 +6,8 @@
 
 if [ -z "$TOR_CLI_HOME" ]; then
     # Set Environment
-    echo "export TOR_CLI_HOME=$HOME/.torcli" >> ~/.bashrc
-    source ~/.bashrc
+    export TOR_CLI_HOME=$HOME/.torcli
+    # echo "export TOR_CLI_HOME=$HOME/.torcli" >> ~/.bashrc
 fi
 
 BIN_DIR="$TOR_CLI_HOME/bin"
@@ -19,8 +19,8 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 # Distro check
-if [ "$(expr substr $(uname -s) 1 5)" != "Linux" ]; then
-    echo -e "${RED}This script currently works on Linux only. Exiting${NC}"
+if [ "$(cat /etc/*release | grep UBUNTU_CODENAME | cut -d= -f2)" != "bionic" ]; then
+    echo -e "${RED}This script currently works on Ubuntu bionic only. Stay tuned for updates. Exiting${NC}"
     exit 1
 fi
 
@@ -43,6 +43,7 @@ elif [ $(uname -m) = "x86_64" ]; then
 fi
 curl -L $dwnlink -o $GDRIVE --progress-bar
 
+mv -rf . $TOR_CLI_HOME/
 #Install deluge, gnupg, pigz
 if [ "$1" = "remote" ]; then
     echo y | sudo apt-get install pigz deluged deluge-console gnupg
@@ -66,13 +67,13 @@ if [ "$1" = "remote" ]; then
   ]
 }" > ~/.config/deluge/execute.conf
     deluged
-    cp -rf ./bin/remote/. $BIN_DIR/
+    ln -s $TOR_CLI_HOME/remote.sh ./remote.sh
 elif [ "$1" = "local" ]; then
     echo y | sudo apt-get install gnupg pigz
-    cp -rf ./bin/local/. $BIN_DIR/
+    ln -s $TOR_CLI_HOME/local.sh ./local.sh
 else
     echo -e "${RED} wrong parameter${NC}"
-	exit $?
+	exit 1
 fi
 
 chmod u+x $BIN_DIR/*
