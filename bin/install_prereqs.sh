@@ -43,7 +43,7 @@ elif [ $(uname -m) = "x86_64" ]; then
 fi
 curl -L $dwnlink -o $GDRIVE --progress-bar
 
-mv -rf . $TOR_CLI_HOME/
+mv -f ./* $TOR_CLI_HOME/
 #Install deluge, gnupg, pigz
 if [ "$1" = "remote" ]; then
     echo y | sudo apt-get install pigz deluged deluge-console gnupg
