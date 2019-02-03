@@ -35,7 +35,7 @@ get_latest_release() {
 mkdir -p $TOR_CLI_HOME
 # HACK: mv command doesn't work as expected in WSL. Small hack to overcome it
 uname -v | grep Microsoft &>/dev/null && cp -rfa ./* $TOR_CLI_HOME/ && rm -rf ./*\
-    mv -f ./* $TOR_CLI_HOME/
+    || mv -f ./* $TOR_CLI_HOME/
 
 echo -e "${GREEN}Fetching prerequired packages${NC}"
 echo -e "${BROWN}"
