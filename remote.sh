@@ -15,7 +15,6 @@ fi
 # TODO: MOVE TO THE INSTALLER
 if !([ -f $GDRIVE ] && dpkg-query -W pigz deluged deluge-console gnupg &>/dev/null); then
     echo -e "${BROWN}Missing packages detected! They will now be installed. Script might request elevation${NC}"
-    mkdir -p "$BIN_DIR" "$DWN_DIR" "$KEY_DIR"
     $DIR/bin/install_prereqs.sh remote || exit 1
 fi
 

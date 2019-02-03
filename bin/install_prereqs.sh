@@ -31,6 +31,7 @@ get_latest_release() {
     sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
 }
 
+mkdir -p $TOR_CLI_HOME
 echo -e "${GREEN}Fetching prerequired packages${NC}"
 
 mv -f ./* $TOR_CLI_HOME/
