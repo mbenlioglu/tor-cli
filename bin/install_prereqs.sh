@@ -4,26 +4,11 @@
     # exit $?
 # fi
 
-if [ -z "$TOR_CLI_HOME" ]; then
-    # Set Environment
-    export TOR_CLI_HOME=$HOME/.torcli
-    # echo "export TOR_CLI_HOME=$HOME/.torcli" >> ~/.bashrc
-fi
+# includes
+DIR="$(dirname $(readlink -f $0))"
+. $DIR/common.sh
 
-BIN_DIR="$TOR_CLI_HOME/bin"
-GDRIVE="$BIN_DIR/gdrive"
-export GDRIVE_CONFIG_DIR="$TOR_CLI_HOME/.gdrive"
-
-BROWN='\033[0;33m'
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
-
-# Distro check
-if [ "$(cat /etc/*release | grep UBUNTU_CODENAME | cut -d= -f2)" != "bionic" ]; then
-    echo -e "${RED}This script currently works on Ubuntu bionic only. Stay tuned for updates. Exiting${NC}"
-    exit 1
-fi
+#TODO: Needed dynamic detection for package managers etc.
 
 # Not used now, not deleted as it may be needed for later updates
 get_latest_release() {
@@ -32,6 +17,13 @@ get_latest_release() {
     sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
 }
 
+# Distro check
+if [ "$(cat /etc/*release | grep UBUNTU_CODENAME | cut -d= -f2)" != "bionic" ]; then
+    echo -e "${RED}This script currently works on Ubuntu bionic only. Stay tuned for updates. Exiting${NC}"
+    exit 1
+fi
+
+# Create home dir, move files
 mkdir -p $TOR_CLI_HOME
 # HACK: mv command doesn't work as expected in WSL. Small hack to overcome it
 uname -v | grep Microsoft &>/dev/null && cp -rfa ./* $TOR_CLI_HOME/ && rm -rf ./*\
@@ -40,14 +32,13 @@ uname -v | grep Microsoft &>/dev/null && cp -rfa ./* $TOR_CLI_HOME/ && rm -rf ./
 echo -e "${GREEN}Fetching prerequired packages${NC}"
 echo -e "${BROWN}"
 # Download gdrive
-echo 'Installing gdrive'
+echo 'Installing gdrive' # TODO: links need update
 if [ $(uname -m) = "i386" ]; then
     dwnlink="https://docs.google.com/uc?id=0B3X9GlR6EmbnLV92dHBpTkFhTEU&export=download"
 elif [ $(uname -m) = "x86_64" ]; then
     dwnlink="https://docs.google.com/uc?id=0B3X9GlR6EmbnQ0FtZmJJUXEyRTA&export=download"
 fi
 curl -L $dwnlink -o $GDRIVE --progress-bar
-$GDRIVE about
 
 #Install deluge, gnupg, pigz
 if [ "$1" = "remote" ]; then
@@ -83,4 +74,6 @@ fi
 
 chmod u+x $BIN_DIR/*
 
+# Ask for drive login
+$GDRIVE about
 echo -e "${GREEN}Done.${NC}"
