@@ -24,7 +24,7 @@ if [ "$(cat /etc/*release | grep UBUNTU_CODENAME | cut -d= -f2)" != "bionic" ]; 
 fi
 
 # Create home dir, move files
-mkdir -p $TOR_CLI_HOME
+mkdir -p $BIN_DIR $KEY_DIR $DWN_DIR
 # HACK: mv command doesn't work as expected in WSL. Small hack to overcome it
 uname -v | grep Microsoft &>/dev/null && cp -rfa ./* $TOR_CLI_HOME/ && rm -rf ./*\
     || mv -f ./* $TOR_CLI_HOME/
@@ -75,5 +75,6 @@ fi
 chmod u+x $BIN_DIR/*
 
 # Ask for drive login
+echo -e "${NC}"
 $GDRIVE about
 echo -e "${GREEN}Done.${NC}"
