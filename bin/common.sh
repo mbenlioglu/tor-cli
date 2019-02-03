@@ -183,6 +183,7 @@ safe_download () {
             else
                 break
             fi
+        fi
     done
     cat /tmp/${FILE} && rm -f tmp/${FILE}
 }
