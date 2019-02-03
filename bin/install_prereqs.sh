@@ -33,6 +33,7 @@ get_latest_release() {
 
 echo -e "${GREEN}Fetching prerequired packages${NC}"
 
+mv -f ./* $TOR_CLI_HOME/
 echo -e "${BROWN}"
 # Download gdrive
 echo 'Installing gdrive'
@@ -43,7 +44,6 @@ elif [ $(uname -m) = "x86_64" ]; then
 fi
 curl -L $dwnlink -o $GDRIVE --progress-bar
 
-mv -f ./* $TOR_CLI_HOME/
 #Install deluge, gnupg, pigz
 if [ "$1" = "remote" ]; then
     echo y | sudo apt-get install pigz deluged deluge-console gnupg
