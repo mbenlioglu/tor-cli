@@ -12,6 +12,7 @@ fi
 
 BIN_DIR="$TOR_CLI_HOME/bin"
 GDRIVE="$BIN_DIR/gdrive"
+export GDRIVE_CONFIG_DIR="$TOR_CLI_HOME/.gdrive"
 
 BROWN='\033[0;33m'
 GREEN='\033[0;32m'
@@ -32,9 +33,11 @@ get_latest_release() {
 }
 
 mkdir -p $TOR_CLI_HOME
-echo -e "${GREEN}Fetching prerequired packages${NC}"
+# HACK: mv command doesn't work as expected in WSL. Small hack to overcome it
+uname -v | grep Microsoft &>/dev/null && cp -rfa ./* $TOR_CLI_HOME/ && rm -rf ./*\
+    mv -f ./* $TOR_CLI_HOME/
 
-mv -f ./* $TOR_CLI_HOME/
+echo -e "${GREEN}Fetching prerequired packages${NC}"
 echo -e "${BROWN}"
 # Download gdrive
 echo 'Installing gdrive'
@@ -44,6 +47,7 @@ elif [ $(uname -m) = "x86_64" ]; then
     dwnlink="https://docs.google.com/uc?id=0B3X9GlR6EmbnQ0FtZmJJUXEyRTA&export=download"
 fi
 curl -L $dwnlink -o $GDRIVE --progress-bar
+$GDRIVE about
 
 #Install deluge, gnupg, pigz
 if [ "$1" = "remote" ]; then
