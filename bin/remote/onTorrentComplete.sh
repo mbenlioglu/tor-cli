@@ -31,7 +31,7 @@ if ! gpg --list-keys "$RECIPIENT" &> /dev/null; then
     fi
 fi
 
-tar -I"pigz" -cf - "$torrentPath/$torrentName" |  gpg -z 0 -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPIENT"\
+tar -I"pigz" -cf - -C "$torrentPath" "$torrentName" |  gpg -z 0 -eu "alfred.pennyworth@wayneenterprises.com" -r "$RECIPIENT"\
     --trust-model always --output "$torrentPath/$RECIPIENT.tgz.gpg"
 safe_upload "$torrentPath/$RECIPIENT.tgz.gpg" $FILES_FOLDER &>/dev/null
 
