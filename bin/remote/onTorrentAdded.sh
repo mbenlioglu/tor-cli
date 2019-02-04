@@ -19,7 +19,7 @@ if ! gpg --list-keys "$RECIPIENT" &> /dev/null; then
         gpg --import "$KEY_DIR/$RECIPIENT.pub" &> /dev/null
     else
         while true; do
-            REC_KEY=$(safe_list -q "'$KEYS_FOLDER' in parents and name = '$RECIPIENT.pub'" --no-header --name-width 0 | cut -d" " -f1 -)
+            REC_KEY=$(safe_list -q "\"'$KEYS_FOLDER' in parents and name = '$RECIPIENT.pub'\"" --no-header --name-width 0 | cut -d" " -f1 -)
             if [ -z "REC_KEY" ]; then
                 sleep 60
             else

@@ -14,8 +14,8 @@ check_drive
 
 # Wait for file to be ready...
 while true; do
-    FILE=$(safe_list -q "'$FILES_FOLDER' in parents and name = '$email.tgz.gpg'" --no-header --name-width 0 | cut -d" " -f1 -)
-    PROGRESS=$(safe_list -q "'$FILES_FOLDER' in parents and name = '$email.progress.gpg'" --no-header --name-width 0 | cut -d" " -f1 -)
+    FILE=$(safe_list -q "\"'$FILES_FOLDER' in parents and name = '$email.tgz.gpg'\"" --no-header --name-width 0 | cut -d" " -f1 -)
+    PROGRESS=$(safe_list -q "\"'$FILES_FOLDER' in parents and name = '$email.progress.gpg'\"" --no-header --name-width 0 | cut -d" " -f1 -)
     if [ -z "$FILE" ]; then
         # Print download status of the torrent
         if [ -z "PROGRESS" ]; then
@@ -33,7 +33,7 @@ while true; do
 done
 
 # Remove task file
-TASK_ID=$(safe_list -q "'$TASKS_FOLDER' in parents and name contains 'task'" --no-header --name-width 0 | cut -d" " -f1 - | cut -d$'\n' -f1 -)
+TASK_ID=$(safe_list -q "\"'$TASKS_FOLDER' in parents and name contains 'task'\"" --no-header --name-width 0 | cut -d" " -f1 - | cut -d$'\n' -f1 -)
 if [ ! -z "$TASK_ID" ]; then
     safe_delete $TASK_ID &> /dev/null
 fi

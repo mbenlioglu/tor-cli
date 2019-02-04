@@ -218,7 +218,7 @@ safe_update () {
 safe_list () {
     local RESPONSE
     while true; do
-        RESPONSE=$($GDRIVE list $@)
+        RESPONSE=$(eval $GDRIVE list $@)
         echo "${RESPONSE}" | grep Failed &> /dev/null && errcho "Failed to get information from cloud. Trying again in 5 seconds" \
             && sleep 5 || break
     done
@@ -229,7 +229,7 @@ safe_list () {
 safe_delete () {
     local RESPONSE
     while true; do
-        RESPONSE=$($GDRIVE delete $@)
+        RESPONSE=$(eval $GDRIVE delete $@)
         echo "${RESPONSE}" | grep Failed &> /dev/null && errcho "Failed delete from cloud. Trying again in 5 seconds" \
             && sleep 5 || break
     done

@@ -45,7 +45,7 @@ fi
 gpg --export alfred.pennyworth@wayneenterprises.com > $KEY_DIR/alfred.pennyworth.pub
 
 # Upload buttler's key if not uploaded yet
-BUTTLER_KEY=$(safe_list -q "'$KEYS_FOLDER' in parents and name = 'alfred.pennyworth.pub'" --no-header --name-width 0 | cut -d" " -f1 -)
+BUTTLER_KEY=$(safe_list -q "\"'$KEYS_FOLDER' in parents and name = 'alfred.pennyworth.pub'\"" --no-header --name-width 0 | cut -d" " -f1 -)
 if [ "$BUTTLER_KEY" = "" ]; then
 	echo -e "${BROWN}Uploading server's public key to drive...${NC}"
     BUTTLER_KEY=$(safe_upload "$KEY_DIR/alfred.pennyworth.pub" $KEYS_FOLDER)

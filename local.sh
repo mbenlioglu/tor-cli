@@ -75,7 +75,7 @@ if [ -z "$down_path" ]; then
 fi
 
 # Check drive for key upload if not exists
-PUBKEY_DRIVE=$(safe_list -q "'$KEYS_FOLDER' in parents and name = '$PUBKEY_FILE'" --no-header --name-width 0 | cut -d" " -f1 -)
+PUBKEY_DRIVE=$(safe_list -q "\"'$KEYS_FOLDER' in parents and name = '$PUBKEY_FILE'\"" --no-header --name-width 0 | cut -d" " -f1 -)
 if [ -z "$PUBKEY_DRIVE" ]; then
 	echo -e "${BROWN}Uploading your public key to drive...${NC}"
     PUBKEY_DRIVE=$(safe_upload "$KEY_DIR/$PUBKEY_FILE" $KEYS_FOLDER)
@@ -85,7 +85,7 @@ elif [ "$update_drive" = true ]; then # TODO: SEND REVOCATION OF KEY TO DRIVE
 fi
 
 # Get remote buttler's public key
-BUTTLER_KEY=$(safe_list -q "'$KEYS_FOLDER' in parents and name = 'alfred.pennyworth.pub'" --no-header --name-width 0 | cut -d" " -f1 -)
+BUTTLER_KEY=$(safe_list -q "\"'$KEYS_FOLDER' in parents and name = 'alfred.pennyworth.pub'\"" --no-header --name-width 0 | cut -d" " -f1 -)
 if [ -z "$BUTTLER_KEY" ]; then
     echo "Uh oh. Your buttler hasn't put his public key to drive. Are you sure he's online?"
     exit 1
