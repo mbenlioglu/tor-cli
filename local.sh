@@ -104,7 +104,7 @@ else
     safe_upload "$email.task" "$TASKS_FOLDER" &> /dev/null && rm "$email.task"
 
     # Wait for torrent to upload drive (track progress, wait for file id)
-    nohup $BIN_DIR/dataTrack.sh "$email" "$pass" "$down_path" > /dev/null 2>&1 &
+    nohup $BIN_DIR/dataTrack.sh "$email" "$pass" "$down_path" > "$TOR_CLI_HOME/tracker.out" 2>&1 &
     echo $! > "$TOR_CLI_HOME/tracker.pid"
 fi
 

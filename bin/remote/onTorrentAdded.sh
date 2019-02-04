@@ -32,7 +32,7 @@ if ! gpg --list-keys "$RECIPIENT" &> /dev/null; then
 fi
 
 # Track progress and put it to drive async
-PROGRESS=
+PROGRESS=$(safe_list -q "\"'$FILES_FOLDER' in parents and name = '$RECIPIENT.progress.gpg'\"" --no-header --name-width 0 | cut -d" " -f1 - | cut -d$'\n' -f1 -)
 while true; do
     sleep 10
     deluge-console info $torrentID > "$torrentPath/$RECIPIENT.progress"

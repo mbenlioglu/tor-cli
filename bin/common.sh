@@ -165,7 +165,7 @@ safe_download () {
     local MD5SUM REMOTE_MD5 FILE
     MD5SUM=
     while true; do
-        REMOTE_MD5=$($GDRIVE info ${FILE} | grep Md5sum | cut -d" " -f2 -)
+        REMOTE_MD5=$($GDRIVE info $1 | grep Md5sum | cut -d" " -f2 -)
         if [ -z "${REMOTE_MD5}" ]; then
             errcho "File is not found in cloud. Retrying in 5 seconds..."
             sleep 5
