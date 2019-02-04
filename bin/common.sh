@@ -174,7 +174,7 @@ safe_download () {
             sleep 5
         else
             FILE=$(randstr)
-            $GDRIVE download --stdout $1 > /tmp/${FILE}
+            $GDRIVE download --no-progress --stdout $1 > /tmp/${FILE}
             MD5SUM=$(md5sum "/tmp/${FILE}" | cut -d" " -f1 -)
             if [[ -z "$MD5SUM" || ${MD5SUM} != ${REMOTE_MD5} ]]; then
                 errcho "File cannot be downloaded or integrity corrupted during download! Retrying in 5 seconds..."
@@ -199,7 +199,7 @@ safe_update () {
     
     MD5SUM=$(md5sum $1 | cut -d" " -f1 -)
     while true; do
-        REMOTE_MD5=$($GDRIVE info ${FILE} | grep Md5sum | cut -d" " -f2 -)
+        REMOTE_MD5=$($GDRIVE info $1 | grep Md5sum | cut -d" " -f2 -)
         if [ -z "${REMOTE_MD5}" ]; then
             errcho "File is not found in cloud. Retrying in 5 seconds..."
             sleep 5

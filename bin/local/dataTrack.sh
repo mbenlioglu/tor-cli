@@ -18,7 +18,7 @@ while true; do
     PROGRESS=$(safe_list -q "\"'$FILES_FOLDER' in parents and name = '$email.progress.gpg'\"" --no-header --name-width 0 | cut -d" " -f1 - | cut -d$'\n' -f1 -)
     if [ -z "$FILE" ]; then
         # Print download status of the torrent
-        if [ -z "PROGRESS" ]; then
+        if [ -z "$PROGRESS" ]; then
             echo "No progress has been submitted by the remote server yet!!"
         else
             safe_download "$PROGRESS" | gpg --batch --quiet --pinentry-mode loopback --passphrase "$pass" -d -
